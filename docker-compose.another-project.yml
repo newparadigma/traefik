@@ -1,0 +1,38 @@
+# пример docker-compose.yml для проекта который необходимо проксировать
+version: '3'
+services:
+    nginx:
+        image: nginx:alpine
+        # обратите внимание что 80й порт НЕ ПРОБРАСЫВАЕМ НАРУЖУ
+
+        # --- ТА САМАЯ ЧАСТЬ ---
+        labels:
+            # включаем видимость контейнера для traefik
+            - "traefik.enable=true"
+            # указываем адрес на который будет проксирован контейнер
+            - "traefik.http.routers.foobar.rule=Host(`web.example.com`)"
+            # указываем точку входа для контейнера
+            # https означает что только по этому протоколу будет доступен контейнер
+            - "traefik.http.routers.foobar.entrypoints=https"
+            # включаем шифрование
+            - "traefik.http.routers.foobar.tls=true"
+            # выбираем сервис шифрования из тех что описаны в файле traefik.yml
+            - "traefik.http.routers.foobar.tls.certresolver=letsEncrypt"
+        # --- КОНЕЦ ТОЙ САМОЙ ЧАСТИ ---
+        volumes:
+            - ./docker/nginx.conf:/etc/nginx/nginx.conf
+            - .:/var/www/html
+
+# --- ЕЩЁ ОДНА ТА САМАЯ ЧАСТЬ ---
+# указываем внешнюю общую сеть
+networks:
+  default:
+    external:
+      # имя общей сети, куда проброшен traefik
+      name: traefik
+# --- КОНЕЦ ЕЩЁ ОДНОЙ ТОЙ САМОЙ ЧАСТИ ---
+
+
+# обратите внимание что в конфигурации traefik.http.routers.foobar.???
+# слово foobar явялется случайным названием и ему необязательно совпадать с названием контейнера или чего либо
+# по этому слову будут сгруппированы правила сервиса

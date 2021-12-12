@@ -1,0 +1,58 @@
+version: '3'
+services:
+  traefik:
+    image: traefik:v2.5
+    restart: unless-stopped
+    # ???
+    security_opt:
+      - no-new-privileges:true
+    # обратите внимание что порты 80, 443 должны быть свободны
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      # ???
+      - /etc/localtime:/etc/localtime:ro
+      # даём доступ слушать докер
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # пробрасываем конфигурацию traefik во внутрь контейнера
+      - ./traefik.yml:/traefik.yml:ro
+      # пробрасываем хранилище сертификатов traefik во внутрь контейнера
+      - ./acme.json:/acme.json
+
+    # --- ВСЯ ЭТА ЧАСТЬ НУЖНА ТОЛЬКО ДЛЯ СТРАНИЦЫ ПАНЕЛИ УПРАВЛЕНИЯ TRAEFIK ---
+    labels:
+      # включаем видимость контейнера для traefik
+      - "traefik.enable=true"
+      # указываем адрес панели управления traefik
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.example.com`)"
+      # это и есть наша панель управления
+      - "traefik.http.routers.dashboard.service=api@internal"
+      # указываем точку входа для панели
+      # https означает что только по этому протоколу будет доступна панель управления
+      - "traefik.http.routers.dashboard.entrypoints=https"
+      # включаем шифрование для dashboard
+      - "traefik.http.routers.dashboard.tls=true"
+      # выбираем сервис шифрования из тех что описаны в файле traefik.yml
+      - "traefik.http.routers.dashboard.tls.certresolver=letsEncrypt"
+
+      # метод авторизации для dashboard
+      # без этой строки панель управления будет доступна без авторизации
+      - "traefik.http.routers.dashboard.middlewares=basic-auth"
+      # пользователь и пароль
+      - "traefik.http.middlewares.basic-auth.basicauth.users=user:password"
+      # пример нескольких пользователей
+      # - "traefik.http.middlewares.basic-auth.basicauth.users=user:password,user2:password2"
+    # --- ВСЯ ЭТА ЧАСТЬ НУЖНА ТОЛЬКО ДЛЯ СТРАНИЦЫ ПАНЕЛИ УПРАВЛЕНИЯ TRAEFIK ---
+
+# указываем внешнюю общую сеть
+# в неё должны быть проброшены все проксируемые контейнеры
+networks:
+  default:
+    external:
+      # название может быть любое
+      name: traefik
+
+# обратите внимание что в конфигурации traefik.http.routers.dashboard.???
+# слово dashboard явялется случайным названием и ему необязательно совпадать с названием контейнера или чего либо
+# по этому слову будут сгруппированы правила сервиса

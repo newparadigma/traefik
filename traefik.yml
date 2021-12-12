@@ -1,0 +1,48 @@
+# точки входа
+entryPoints:
+  # любое название точки входа
+  http:
+    # порт
+    address: ":80"
+    # редирект на https
+    http:
+      redirections:
+        entryPoint:
+          # название точки входа из entryPoints
+          to: https
+          # включить постоянный редирект
+          permanent: true
+  https:
+    address: ":443"
+
+providers:
+  docker:
+    # указываем откуда traefik будет получать информацию о контейнерах
+    endpoint: "unix:///var/run/docker.sock"
+    # по умолчанию не хватаем все контейнеры подряд
+    exposedByDefault: false
+
+# автоматические генераторы сертификатов
+certificatesResolvers:
+  # произвольное название которое вы будете использовать в labels части docker-compose.yml
+  letsEncrypt:
+    # это протокол let's encrypt
+    acme:
+      # ваш действующий эмайл
+      email: example@example.com
+      # указываем хранилище для уже готовых сертификатов
+      storage: acme.json
+      # при необходимости можно сменить основной сервер letsencrypt на тестовый
+      # caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+
+      # ???
+      httpChallenge:
+        # указываем название интересующий нас точки входа
+        # в данном случае это 80й порт, в нашем примере он имеет имя http
+        entryPoint: http
+
+api:
+  # панель мониторинга traefic
+  dashboard: true
+  # НЕБЕЗОПАСНЫЙ РЕЖИМ, ВЫКЛЮЧИТЬ ДЛЯ ПРОДАКШЕНА
+  insecure: false
