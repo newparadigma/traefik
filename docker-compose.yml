@@ -25,6 +25,7 @@ services:
       # включаем видимость контейнера для traefik
       - "traefik.enable=true"
       # указываем адрес панели управления traefik
+      # ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО
       - "traefik.http.routers.dashboard.rule=Host(`traefik.example.com`)"
       # это и есть наша панель управления
       - "traefik.http.routers.dashboard.service=api@internal"
@@ -40,6 +41,7 @@ services:
       # без этой строки панель управления будет доступна без авторизации
       - "traefik.http.routers.dashboard.middlewares=basic-auth"
       # пользователь и пароль
+      # ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО
       - "traefik.http.middlewares.basic-auth.basicauth.users=user:password"
       # пример нескольких пользователей
       # - "traefik.http.middlewares.basic-auth.basicauth.users=user:password,user2:password2"

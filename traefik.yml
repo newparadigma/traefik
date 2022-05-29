@@ -29,6 +29,7 @@ certificatesResolvers:
     # это протокол let's encrypt
     acme:
       # ваш действующий эмайл
+      # ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО
       email: example@example.com
       # указываем хранилище для уже готовых сертификатов
       storage: acme.json
